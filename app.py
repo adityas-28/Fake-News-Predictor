@@ -1,8 +1,8 @@
 import streamlit as st
 import joblib
 import numpy as np
-from optimized_custom_logistic_regression import OptimizedCustomLogisticRegression
-from custom_gradient_boosting import GradientBoostingStumpClassifier
+from models.optimized_custom_logistic_regression import OptimizedCustomLogisticRegression
+# from models.custom_gradient_boosting import GradientBoostingStumpClassifier
 
 # Load models
 vectorizer = joblib.load('vectorizer.joblib')
