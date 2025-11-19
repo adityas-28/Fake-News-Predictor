@@ -12,7 +12,6 @@ from keras.preprocessing.sequence import pad_sequences
 # from tensorflow.keras.models import load_model
 # from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-
 vectorizer = joblib.load('vectorizer.joblib')
 LR = joblib.load('logistic_regression_model.joblib')
 DT = joblib.load('decision_tree_model.joblib')
