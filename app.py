@@ -1,11 +1,16 @@
 import streamlit as st
 import joblib
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
 
 vectorizer = joblib.load('vectorizer.joblib')
 LR = joblib.load('logistic_regression_model.joblib')
 DT = joblib.load('decision_tree_model.joblib')
 GBC = joblib.load('gradient_boosting_model.joblib')
 RFC = joblib.load('random_forest_model.joblib')
+tokenizer = joblib.load("tokenizer.joblib")
+LSTM_model = load_model("lstm_model.h5")
 
 st.set_page_config(page_title="Fake News Detection", page_icon="📰", layout="centered")
 
@@ -19,6 +24,13 @@ newsInput = st.text_area("🗞️ Paste your news article here:")
 def output_label(output):
     return "✅ Real News" if output == 1 else "❌ Fake News"
 
+def lstm_predict(text):
+    seq = tokenizer.texts_to_sequences([text])
+    padded = pad_sequences(seq, maxlen=300)   # make sure maxlen matches training
+    pred = LSTM_model.predict(padded)[0][0]
+    return 1 if pred >= 0.5 else 0
+
+
 if st.button("🔍 Predict"):
     if newsInput.strip():
         transformed_text = vectorizer.transform([newsInput])
@@ -27,12 +39,14 @@ if st.button("🔍 Predict"):
         DT_pred = DT.predict(transformed_text)[0]
         GBC_pred = GBC.predict(transformed_text)[0]
         RFC_pred = RFC.predict(transformed_text)[0]
+        LSTM_pred = lstm_predict(newsInput)
 
         results = {
             "Logistic Regression": output_label(LR_pred),
             "Decision Tree": output_label(DT_pred),
             "Gradient Boosting": output_label(GBC_pred),
-            "Random Forest": output_label(RFC_pred)
+            "Random Forest": output_label(RFC_pred),
+            "LSTM Model": output_label(LSTM_pred)
         }
 
         st.subheader("📊 Model Predictions:")
@@ -40,7 +54,7 @@ if st.button("🔍 Predict"):
             st.write(f"**{model}** → {result}")
 
         # Majority vote (ensemble)
-        preds = [LR_pred, DT_pred, GBC_pred, RFC_pred]
+        preds = [LR_pred, DT_pred, GBC_pred, RFC_pred, LSTM_pred]
         final = 1 if sum(preds) >= 3 else 0
         st.markdown("---")
         st.markdown(f"### 🧭 Final Verdict: **{output_label(final)}**")
